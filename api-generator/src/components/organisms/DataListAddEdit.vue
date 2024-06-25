@@ -1,0 +1,100 @@
+<script setup lang="ts">
+import { IDataGroup } from "src/config/types";
+import { useDataGroup } from "src/stores/useDataGroup";
+import { Ref, onMounted, ref, watch } from "vue";
+// import { useUnit } from "../../stores/useUnit";
+import { IDataStructure } from "src/config/types";
+import { useDataList } from "src/stores/useDataList";
+
+const props = defineProps<{
+    dataStructure: IDataStructure[];
+    dataGroupUuid: string;
+    initialValues?: { [key: string]: unknown };
+    isEdit?: boolean;
+}>();
+const emit = defineEmits<{
+    (e: "onClose"): void;
+}>();
+
+const isSubmitting = ref(false);
+const validForm = ref(false);
+const form = ref<{
+    [key: string]: unknown
+}>({});
+const vendor = useDataList();
+
+
+
+const onSubmit = () => {
+    if (props.isEdit) {
+        vendor.putEditData(form.value, props.dataGroupUuid, `${props.initialValues?.['uuid']}`, {
+            beforeSend: () => {
+                isSubmitting.value = true;
+            },
+            success: () => {
+
+                isSubmitting.value = false;
+                vendor.getIndexData(props.dataGroupUuid,
+                    { page: 1, limit: 10 }
+                );
+                emit("onClose");
+            },
+            error: () => {
+
+                isSubmitting.value = false;
+                vendor.getIndexData(props.dataGroupUuid,
+                    { page: 1, limit: 10 }
+                );
+                emit("onClose");
+            }
+        });
+    }
+    else {
+        vendor.postCreateData(form.value, props.dataGroupUuid, {
+            beforeSend: () => {
+                isSubmitting.value = true;
+            },
+            success: () => {
+                isSubmitting.value = false;
+                vendor.getIndexData(props.dataGroupUuid, {
+                    page: 1, limit: 10
+                })
+                emit("onClose");
+
+            },
+            error: () => {
+                isSubmitting.value = false;
+
+            }
+        });
+    }
+}
+
+onMounted(() => {
+    if (!!props.initialValues) {
+        [...props.dataStructure].forEach((item, i) => {
+            form.value[item.name] = props.initialValues?.[item.name];
+        })
+    }
+});
+
+
+const required = (v: string) => {
+    return !!v || "Field is required";
+};
+
+</script>
+<template>
+    <v-form v-model="validForm" @submit.prevent="onSubmit">
+        <template v-for="(item, i) in props.dataStructure" :key="i">
+
+            <v-text-field v-model="form[item.name]" :readonly="false" class="mb-2" :label="item.name" clearable
+                :rules="[required]"></v-text-field>
+        </template>
+
+        <v-btn :disabled="!validForm" :loading="isSubmitting" color="success" size="large" type="submit"
+            variant="elevated" block>
+            {{ props.isEdit ? "Edit" : "Create" }}
+        </v-btn>
+    </v-form>
+</template>
