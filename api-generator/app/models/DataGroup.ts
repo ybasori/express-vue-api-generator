@@ -8,6 +8,10 @@ const DataGroup = (sequelize: Sequelize) => {
     {
       uuid: DataTypes.STRING,
       name: DataTypes.STRING,
+      projectId: {
+        type: DataTypes.INTEGER,
+        field: "project_id",
+      },
       createdAt: {
         type: DataTypes.DATE,
         field: "created_at",
@@ -21,6 +25,10 @@ const DataGroup = (sequelize: Sequelize) => {
   );
 
   dataGroup.associate = (model) => {
+    dataGroup.belongsTo(model.project, {
+      as: "project",
+      foreignKey: { name: "projectId" },
+    });
     dataGroup.hasMany(model.dataStructure, {
       as: "dataStructure",
       foreignKey: { name: "dataGroupId" },

@@ -1,70 +1,70 @@
 <script setup lang="ts">
-import DataListAddEdit from "src/components/organisms/DataListAddEdit.vue";
-import { IDataStructure } from "src/config/types";
-import { useDataList } from 'src/stores/useDataList';
-import { Ref, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import ProjectAddEdit from "src/components/organisms/ProjectAddEdit.vue";
+import ProjectDelete from "src/components/organisms/ProjectDelete.vue";
+import { IProject } from "src/config/types";
+import { useProject } from "src/stores/useProject";
+import { Ref, ref } from "vue";
+import type { VDataTable } from "vuetify/components";
+
+type ReadonlyHeaders = VDataTable["$props"]["headers"];
+const headers: ReadonlyHeaders = [
+    {
+        align: "start",
+        key: "no",
+        sortable: false,
+        title: "No",
+    },
+    { key: "name", title: "Name" },
+    { key: "createdAt", title: "Created At" },
+    { key: "updatedAt", title: "Updated At" },
+    {
+        key: "action", title: "Action",
+        sortable: false,
+    },
+];
 
 
-const route = useRoute()
 const itemsPerPage = ref(10);
 const currentPage = ref(1);
 const sortPage: Ref<{
     key: string;
     order: "asc" | "desc";
-} | undefined> = ref(undefined);
-
-const vendorStore = useDataList();
-
-const loadItems = ({
-    page,
-    itemsPerPage: limit,
-    sortBy,
-}: {
-    page: number;
-    itemsPerPage: number;
-    sortBy?: { key: string; order: "asc" | "desc" };
-}) => {
-    currentPage.value = page;
-    sortPage.value = sortBy;
-    itemsPerPage.value = limit;
-    vendorStore.getIndexData(`${route.params.uuid}`,
-        { page, limit, sort: sortBy }
-    );
-};
-
+}> = ref({
+    key: "createdAt",
+    order: "asc"
+});
+const vendorStore = useProject();
 
 const dialog = ref(false);
 const dialogEdit = ref(false);
-const itemEdit: Ref<undefined | { [key: string]: unknown }> = ref(undefined);
+const itemEdit: Ref<undefined | IProject> = ref(undefined);
 const dialogDelete = ref(false);
+const itemDelete: Ref<null | IProject> = ref(null);
 const isSubmittingDelete = ref(false);
-const itemDelete: Ref<null | { uuid: string }> = ref(null);
+
 
 const openDialog = () => {
     dialog.value = true;
 };
-
-const openDialogEdit = (item: { [key: string]: unknown }) => {
+const openDialogEdit = (item: IProject) => {
     dialogEdit.value = true;
     itemEdit.value = item;
+};
+const openDialogDelete = (item: IProject) => {
+    dialogDelete.value = true;
+    itemDelete.value = item;
 };
 const closeDialogEdit = () => {
     dialogEdit.value = false;
     itemEdit.value = undefined;
 };
-const openDialogDelete = (item: { uuid: string }) => {
-    dialogDelete.value = true;
-    itemDelete.value = item;
-};
-
 const closeDialogDelete = () => {
     dialogDelete.value = false;
     itemDelete.value = null;
 };
 
 const onDelete = () => {
-    vendorStore.deleteData(`${route.params.uuid}`, itemDelete.value?.uuid ?? "", {
+    vendorStore.deleteProject(itemDelete.value?.uuid ?? "", {
         beforeSend: () => {
             isSubmittingDelete.value = true;
         },
@@ -84,54 +84,65 @@ const onDelete = () => {
     })
 }
 
-onMounted(() => {
-    loadItems({ page: 1, itemsPerPage: 10 })
-})
+const loadItems = ({
+    page,
+    itemsPerPage: limit,
+    sortBy,
+}: {
+    page: number;
+    itemsPerPage: number;
+    sortBy: { key: string; order: "asc" | "desc" };
+}) => {
+    currentPage.value = page;
+    sortPage.value = sortBy;
+    itemsPerPage.value = limit;
+    vendorStore.getIndex(
+        { page, limit, sort: sortBy }
+    );
+};
 </script>
 <template>
+
     <v-card flat color="#dddddd">
         <template v-slot:title>
-            <span>Data List</span>
+            <span>List Project</span>
         </template>
         <template v-slot:append>
-            <v-btn class="text-none" color="primary" text="NEW DATA" variant="text" slim @click="openDialog()"></v-btn>
+            <v-btn class="text-none" color="primary" text="NEW PROJECT" variant="text" slim
+                @click="openDialog()"></v-btn>
         </template>
+        <v-data-table-server :headers="headers" :items="vendorStore.projects?.rows ?? []" @update:options="loadItems"
+            v-model:items-per-page="itemsPerPage" :items-length="vendorStore.projects?.count ?? 0"
+            :loading="vendorStore.projectsLoading">
+
+            <template v-slot:item.action="{ item }: { item: IProject }">
+                <v-btn size="small" text="Detail" slim :to="`/project/${item.uuid}`"></v-btn>
+                <v-btn size="small" color="primary" text="Edit" slim @click="openDialogEdit(item)"></v-btn>
+                <v-btn size="small" color="red" text="Delete" slim @click="openDialogDelete(item)"></v-btn>
+            </template>
+
+            <template v-slot:item.no="{ index }: { index: number }">
+                {{ index + 1 }}.
+            </template>
+
+        </v-data-table-server>
     </v-card>
-    <v-data-table-server :headers="[
-        { align: 'start', key: 'no', sortable: false, title: 'No', },
-        ...vendorStore.dataLists?.dataGroup.dataStructure.map((item: IDataStructure) => ({ key: item.name, title: item.name })) ?? [],
-        { key: 'createdAt', title: 'Created At' },
-        { key: 'updatedAt', title: 'Updated At' },
-        { key: 'action', title: 'Action', sortable: false, },]" :items="vendorStore.dataLists?.dataRow.rows"
-        @update:options="loadItems" v-model:items-per-page="itemsPerPage"
-        :items-length="vendorStore.dataLists?.dataRow.count ?? 0" :loading="vendorStore.dataListsLoading">
 
-        <template v-slot:item.no="{ index }: { index: number }">
-            {{ index + 1 }}.
-        </template>
 
-        <template v-slot:item.action="{ item }">
-            <v-btn color="primary" text="Edit" slim @click="openDialogEdit(item)"></v-btn>
-            <v-btn color="red" text="Delete" slim @click="openDialogDelete(item)"></v-btn>
-        </template>
-
-    </v-data-table-server>
     <v-dialog v-model="dialog" max-width="800">
         <v-card>
             <v-card-title class="d-flex justify-space-between align-center">
-                <div class="text-h5 text-medium-emphasis ps-2">New Data</div>
+                <div class="text-h5 text-medium-emphasis ps-2">New Data Group</div>
 
                 <v-btn icon="mdi-close" variant="text" @click="dialog = false"></v-btn>
             </v-card-title>
             <v-divider class="mb-4"></v-divider>
+
             <v-card-text>
-                <DataListAddEdit :dataGroupUuid="`${route.params.uuid}`"
-                    :dataStructure="vendorStore.dataLists?.dataGroup.dataStructure ?? []" @onClose="dialog = false">
-                </DataListAddEdit>
+                <ProjectAddEdit @onClose="dialog = false"></ProjectAddEdit>
             </v-card-text>
         </v-card>
     </v-dialog>
-
     <v-dialog v-model="dialogEdit" max-width="800">
         <v-card>
             <v-card-title class="d-flex justify-space-between align-center">
@@ -142,14 +153,10 @@ onMounted(() => {
             <v-divider class="mb-4"></v-divider>
 
             <v-card-text>
-                <DataListAddEdit :dataGroupUuid="`${route.params.uuid}`"
-                    :dataStructure="vendorStore.dataLists?.dataGroup.dataStructure ?? []" :initialValues="itemEdit"
-                    @onClose="closeDialogEdit()" :isEdit="true">
-                </DataListAddEdit>
+                <ProjectAddEdit :initialValues="itemEdit" @onClose="closeDialogEdit()"></ProjectAddEdit>
             </v-card-text>
         </v-card>
     </v-dialog>
-
     <v-dialog v-model="dialogDelete" max-width="800">
         <v-card>
             <v-card-title class="d-flex justify-space-between align-center">
@@ -159,6 +166,7 @@ onMounted(() => {
                     :disabled="isSubmittingDelete"></v-btn>
             </v-card-title>
             <v-divider class="mb-4"></v-divider>
+            <ProjectDelete></ProjectDelete>
             <template v-slot:actions>
                 <v-spacer></v-spacer>
 

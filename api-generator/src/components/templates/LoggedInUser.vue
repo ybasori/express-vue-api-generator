@@ -9,16 +9,19 @@ const items = [
         title: "Dashboard",
         value: "/",
         icon: "mdi mdi-view-dashboard",
+        exact: true
     },
     {
-        title: "Data",
-        value: "/data-group",
+        title: "Project",
+        value: "/project",
         icon: "mdi mdi-account-box",
+        exact: false
     },
     {
         title: "About",
         value: "/about",
         icon: "mdi mdi-account-box",
+        exact: false
     },
 ];
 
@@ -32,17 +35,8 @@ watch(group, () => {
         <v-layout>
             <v-navigation-drawer v-model="drawer" :location="$vuetify.display.mobile ? 'bottom' : undefined" permanent>
                 <v-list>
-                    <RouterLink
-                        :class="'v-list-item v-list-item--link v-theme--light v-list-item--density-default v-list-item--one-line rounded-0 v-list-item--variant-text ' + ($route.fullPath === item.value ? 'v-list-item--active' : '')"
-                        v-for="(item, i) in items" :key="i" :value="item" :to="item.value">
-                        <span class="v-list-item__overlay"></span>
-                        <span class="v-list-item__underlay"></span>
-                        <div class="v-list-item__prepend">
-                            <i :class="item.icon + ' v-icon v-theme--light v-icon--size-default'"></i>
-                            <div class="v-list-item__spacer"></div>
-                        </div>
-                        <div class="v-list-item__content">{{ item.title }}</div>
-                    </RouterLink>
+                    <v-list-item v-for="(item, i) in items" :key="i" :prepend-icon="item.icon" :title="item.title"
+                        :to="item.value" :exact="item.exact"></v-list-item>
                 </v-list>
                 <template v-slot:append>
                     <div class="pa-2">

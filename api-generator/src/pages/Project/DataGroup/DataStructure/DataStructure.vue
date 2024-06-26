@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import DataGroupAddEdit from "src/components/organisms/DataGroupAddEdit.vue";
-import DataGroupDelete from "src/components/organisms/DataGroupDelete.vue";
-import { IDataGroup } from "src/config/types";
-import { useDataGroup } from "src/stores/useDataGroup";
+import DataStructureAddEdit from "src/components/organisms/DataStructureAddEdit.vue";
+import type { IDataStructure } from "src/config/types";
+import { useDataStructure } from "src/stores/useDataStructure";
 import { Ref, ref } from "vue";
+import { useRoute } from "vue-router";
 import type { VDataTable } from "vuetify/components";
 
 type ReadonlyHeaders = VDataTable["$props"]["headers"];
@@ -15,6 +15,7 @@ const headers: ReadonlyHeaders = [
         title: "No",
     },
     { key: "name", title: "Name" },
+    { key: "type", title: "Type" },
     { key: "createdAt", title: "Created At" },
     { key: "updatedAt", title: "Updated At" },
     {
@@ -33,24 +34,26 @@ const sortPage: Ref<{
     key: "createdAt",
     order: "asc"
 });
-const vendorStore = useDataGroup();
+const vendorStore = useDataStructure();
 
 const dialog = ref(false);
 const dialogEdit = ref(false);
-const itemEdit: Ref<undefined | IDataGroup> = ref(undefined);
+const itemEdit: Ref<undefined | IDataStructure> = ref(undefined);
 const dialogDelete = ref(false);
-const itemDelete: Ref<null | IDataGroup> = ref(null);
+const itemDelete: Ref<null | IDataStructure> = ref(null);
 const isSubmittingDelete = ref(false);
+const route = useRoute()
 
 
 const openDialog = () => {
     dialog.value = true;
 };
-const openDialogEdit = (item: IDataGroup) => {
+const openDialogEdit = (item: IDataStructure) => {
     dialogEdit.value = true;
     itemEdit.value = item;
 };
-const openDialogDelete = (item: IDataGroup) => {
+const openDialogDelete = (item: IDataStructure) => {
+    console.log(item)
     dialogDelete.value = true;
     itemDelete.value = item;
 };
@@ -64,7 +67,7 @@ const closeDialogDelete = () => {
 };
 
 const onDelete = () => {
-    vendorStore.deleteDataGroup(itemDelete.value?.uuid ?? "", {
+    vendorStore.deleteData(`${route.params.projectUuid}`, `${route.params.dataGroupUuid}`, itemDelete.value?.uuid ?? "", {
         beforeSend: () => {
             isSubmittingDelete.value = true;
         },
@@ -96,7 +99,7 @@ const loadItems = ({
     currentPage.value = page;
     sortPage.value = sortBy;
     itemsPerPage.value = limit;
-    vendorStore.getIndex(
+    vendorStore.getIndex(`${route.params.projectUuid}`, `${route.params.dataGroupUuid}`,
         { page, limit, sort: sortBy }
     );
 };
@@ -105,27 +108,18 @@ const loadItems = ({
 
     <v-card flat color="#dddddd">
         <template v-slot:title>
-            <span>List Data Group</span>
+            <span>Structure</span>
         </template>
         <template v-slot:append>
-            <v-btn class="text-none" color="primary" text="NEW DATA GROUP" variant="text" slim
-                @click="openDialog()"></v-btn>
+            <v-btn class="text-none" color="primary" text="NEW FIELD" variant="text" slim @click="openDialog()"></v-btn>
         </template>
-        <v-data-table-server :headers="headers" :items="vendorStore.dataGroups?.rows ?? []" @update:options="loadItems"
-            v-model:items-per-page="itemsPerPage" :items-length="vendorStore.dataGroups?.count ?? 0"
-            :loading="vendorStore.dataGroupsLoading">
+        <v-data-table-server :headers="headers" :items="vendorStore.dataStructures?.rows ?? []"
+            @update:options="loadItems" v-model:items-per-page="itemsPerPage"
+            :items-length="vendorStore.dataStructures?.count ?? 0" :loading="vendorStore.dataStructuresLoading">
 
-            <template v-slot:item.action="{ item }: { item: IDataGroup }">
-                <RouterLink :to="`/data-group/${item.uuid}/list`"
-                    class="v-btn v-btn--elevatedv-btn v-btn--elevated v-btn--slim v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-elevated">
-                    List
-                </RouterLink>
-                <RouterLink :to="`/data-group/${item.uuid}/structure`"
-                    class="v-btn v-btn--elevatedv-btn v-btn--elevated v-btn--slim v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-elevated">
-                    Structure
-                </RouterLink>
-                <v-btn color="primary" text="Edit" slim @click="openDialogEdit(item)"></v-btn>
-                <v-btn color="red" text="Delete" slim @click="openDialogDelete(item)"></v-btn>
+            <template v-slot:item.action="{ item }: { item: IDataStructure }">
+                <v-btn size="small" color="primary" text="Edit" slim @click="openDialogEdit(item)"></v-btn>
+                <v-btn size="small" color="red" text="Delete" slim @click="openDialogDelete(item)"></v-btn>
             </template>
 
             <template v-slot:item.no="{ index }: { index: number }">
@@ -139,41 +133,44 @@ const loadItems = ({
     <v-dialog v-model="dialog" max-width="800">
         <v-card>
             <v-card-title class="d-flex justify-space-between align-center">
-                <div class="text-h5 text-medium-emphasis ps-2">New Data Group</div>
+                <div class="text-h5 text-medium-emphasis ps-2">New Data Structure</div>
 
                 <v-btn icon="mdi-close" variant="text" @click="dialog = false"></v-btn>
             </v-card-title>
             <v-divider class="mb-4"></v-divider>
 
             <v-card-text>
-                <DataGroupAddEdit @onClose="dialog = false"></DataGroupAddEdit>
+                <DataStructureAddEdit :projectUuid="`${route.params.projectUuid}`" @onClose="dialog = false"
+                    :dataGroupUuid="`${route.params.dataGroupUuid}`">
+                </DataStructureAddEdit>
             </v-card-text>
         </v-card>
     </v-dialog>
     <v-dialog v-model="dialogEdit" max-width="800">
         <v-card>
             <v-card-title class="d-flex justify-space-between align-center">
-                <div class="text-h5 text-medium-emphasis ps-2">Edit Data Group</div>
+                <div class="text-h5 text-medium-emphasis ps-2">Edit Data Structure</div>
 
                 <v-btn icon="mdi-close" variant="text" @click="closeDialogEdit()"></v-btn>
             </v-card-title>
             <v-divider class="mb-4"></v-divider>
 
             <v-card-text>
-                <DataGroupAddEdit :initialValues="itemEdit" @onClose="closeDialogEdit()"></DataGroupAddEdit>
+                <DataStructureAddEdit :projectUuid="`${route.params.projectUuid}`" :initialValues="itemEdit"
+                    @onClose="closeDialogEdit()" :dataGroupUuid="`${route.params.dataGroupUuid}`">
+                </DataStructureAddEdit>
             </v-card-text>
         </v-card>
     </v-dialog>
     <v-dialog v-model="dialogDelete" max-width="800">
         <v-card>
             <v-card-title class="d-flex justify-space-between align-center">
-                <div class="text-h5 text-medium-emphasis ps-2">Delete Data Group</div>
+                <div class="text-h5 text-medium-emphasis ps-2">Delete Data Structure</div>
 
                 <v-btn icon="mdi-close" variant="text" @click="closeDialogDelete()"
                     :disabled="isSubmittingDelete"></v-btn>
             </v-card-title>
             <v-divider class="mb-4"></v-divider>
-            <DataGroupDelete></DataGroupDelete>
             <template v-slot:actions>
                 <v-spacer></v-spacer>
 

@@ -1,35 +1,25 @@
 import axios, { AxiosError } from "axios";
 import { defineStore } from "pinia";
 import API from "src/config/api";
-import { IDataStructure, IDataRowWithListStructure } from "src/config/types";
+import { IProject } from "src/config/types";
 import { expandJSON } from "src/utils/helper";
 import { Ref, ref } from "vue";
 
-export const useDataList = defineStore("dataList", () => {
-  const dataLists: Ref<null | {
-    dataGroup: {
-      name: string;
-      dataStructure: IDataStructure[];
-    };
-    dataRow: {
-      count: number;
-      rows: { [key: string]: unknown }[];
-    };
+export const useProject = defineStore("useProject", () => {
+  const projects: Ref<null | {
+    count: number;
+    rows: IProject[];
   }> = ref(null);
-  const dataListsLoading = ref(false);
-  const dataListsError: Ref<null | AxiosError> = ref(null);
+  const projectsLoading = ref(false);
+  const projectsError: Ref<null | AxiosError> = ref(null);
 
-  async function getIndexData(
-    projectUuid: string,
-    dataGroupUuid: string,
-    query: {
-      page: number;
-      limit: number;
-      sort?: { key: string; order: "asc" | "desc" };
-    }
-  ) {
+  async function getIndex(query: {
+    page: number;
+    limit: number;
+    sort?: { key: string; order: "asc" | "desc" };
+  }) {
     try {
-      dataListsLoading.value = true;
+      projectsLoading.value = true;
 
       const queryString = expandJSON(query)
         .map((item) => (item.value ? `${item.label}=${item.value}` : null))
@@ -37,30 +27,25 @@ export const useDataList = defineStore("dataList", () => {
         .join("&");
 
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATALIST_INDEX.replace(
-          ":projectUuid",
-          projectUuid
-        ).replace(":dataGroupUuid", dataGroupUuid)}?${queryString}`,
+        url: `${API.LOCAL.API.V1.PROJECT_INDEX}?${queryString}`,
         method: "get",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,
         },
       });
 
-      dataListsLoading.value = false;
-      dataLists.value = response.data.data;
+      projectsLoading.value = false;
+      projects.value = response.data.data;
     } catch (err) {
-      dataListsLoading.value = false;
+      projectsLoading.value = false;
       if (err instanceof AxiosError) {
-        dataListsError.value = err;
+        projectsError.value = err;
       }
     }
   }
 
-  async function postCreateData(
-    form: { [key: string]: unknown },
-    projectUuid: string,
-    dataGroupUuid: string,
+  async function postCreate(
+    form: { name: string },
     {
       beforeSend,
       success,
@@ -73,11 +58,9 @@ export const useDataList = defineStore("dataList", () => {
   ) {
     try {
       beforeSend();
+
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATALIST_INDEX.replace(
-          ":projectUuid",
-          projectUuid
-        ).replace(":dataGroupUuid", dataGroupUuid)}`,
+        url: `${API.LOCAL.API.V1.PROJECT_INDEX}`,
         method: "post",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,
@@ -91,9 +74,7 @@ export const useDataList = defineStore("dataList", () => {
     }
   }
 
-  async function deleteData(
-    projectUuid: string,
-    dataGroupUuid: string,
+  async function deleteProject(
     uuid: string,
     {
       beforeSend,
@@ -108,12 +89,7 @@ export const useDataList = defineStore("dataList", () => {
     try {
       beforeSend();
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATALIST_DETAIL.replace(
-          ":projectUuid",
-          projectUuid
-        )
-          .replace(":dataGroupUuid", dataGroupUuid)
-          .replace(":dataListUuid", uuid)}`,
+        url: `${API.LOCAL.API.V1.PROJECT_DETAIL.replace(":projectUuid", uuid)}`,
         method: "delete",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,
@@ -126,9 +102,7 @@ export const useDataList = defineStore("dataList", () => {
   }
 
   async function putEditData(
-    form: { [key: string]: unknown },
-    projectUuid: string,
-    dataGroupUuid: string,
+    form: { name: string },
     uuid: string,
     {
       beforeSend,
@@ -144,12 +118,7 @@ export const useDataList = defineStore("dataList", () => {
       beforeSend();
 
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATALIST_DETAIL.replace(
-          ":projectUuid",
-          projectUuid
-        )
-          .replace(":dataGroupUuid", dataGroupUuid)
-          .replace(":dataListUuid", uuid)}`,
+        url: `${API.LOCAL.API.V1.PROJECT_DETAIL.replace(":projectUuid", uuid)}`,
         method: "put",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,
@@ -164,12 +133,12 @@ export const useDataList = defineStore("dataList", () => {
   }
 
   return {
-    getIndexData,
-    dataLists,
-    dataListsLoading,
-    dataListsError,
-    postCreateData,
-    deleteData,
+    getIndex,
+    projects,
+    projectsLoading,
+    projectsError,
+    postCreate,
+    deleteProject,
     putEditData,
   };
 });

@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { IDataGroup } from "src/config/types";
-import { useDataGroup } from "src/stores/useDataGroup";
-import { Ref, onMounted, ref, watch } from "vue";
-// import { useUnit } from "../../stores/useUnit";
+import { onMounted, ref } from "vue";
 import { IDataStructure } from "src/config/types";
 import { useDataList } from "src/stores/useDataList";
 
 const props = defineProps<{
     dataStructure: IDataStructure[];
+    projectUuid: string;
     dataGroupUuid: string;
     initialValues?: { [key: string]: unknown };
     isEdit?: boolean;
@@ -27,14 +25,14 @@ const vendor = useDataList();
 
 const onSubmit = () => {
     if (props.isEdit) {
-        vendor.putEditData(form.value, props.dataGroupUuid, `${props.initialValues?.['uuid']}`, {
+        vendor.putEditData(form.value, props.projectUuid, props.dataGroupUuid, `${props.initialValues?.['uuid']}`, {
             beforeSend: () => {
                 isSubmitting.value = true;
             },
             success: () => {
 
                 isSubmitting.value = false;
-                vendor.getIndexData(props.dataGroupUuid,
+                vendor.getIndexData(props.projectUuid, props.dataGroupUuid,
                     { page: 1, limit: 10 }
                 );
                 emit("onClose");
@@ -42,7 +40,7 @@ const onSubmit = () => {
             error: () => {
 
                 isSubmitting.value = false;
-                vendor.getIndexData(props.dataGroupUuid,
+                vendor.getIndexData(props.projectUuid, props.dataGroupUuid,
                     { page: 1, limit: 10 }
                 );
                 emit("onClose");
@@ -50,13 +48,13 @@ const onSubmit = () => {
         });
     }
     else {
-        vendor.postCreateData(form.value, props.dataGroupUuid, {
+        vendor.postCreateData(form.value, props.projectUuid, props.dataGroupUuid, {
             beforeSend: () => {
                 isSubmitting.value = true;
             },
             success: () => {
                 isSubmitting.value = false;
-                vendor.getIndexData(props.dataGroupUuid, {
+                vendor.getIndexData(props.projectUuid, props.dataGroupUuid, {
                     page: 1, limit: 10
                 })
                 emit("onClose");

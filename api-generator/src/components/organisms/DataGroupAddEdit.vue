@@ -6,6 +6,7 @@ import { Ref, onMounted, ref, watch } from "vue";
 
 const props = defineProps<{
     initialValues?: IDataGroup;
+    projectUuid: string;
 }>();
 const emit = defineEmits<{
     (e: "onClose"): void;
@@ -23,14 +24,14 @@ const onSubmit = () => {
     if (!validForm.value) return;
 
     if (!!props.initialValues) {
-        vendor.putEditData(form.value, props.initialValues.uuid, {
+        vendor.putEditData(form.value, props.projectUuid, props.initialValues.uuid, {
             beforeSend: () => {
                 isSubmitting.value = true;
             },
             success: () => {
 
                 isSubmitting.value = false;
-                vendor.getIndex(
+                vendor.getIndex(props.projectUuid,
                     { page: 1, limit: 10 }
                 );
                 emit("onClose");
@@ -38,7 +39,7 @@ const onSubmit = () => {
             error: () => {
 
                 isSubmitting.value = false;
-                vendor.getIndex(
+                vendor.getIndex(props.projectUuid,
                     { page: 1, limit: 10 }
                 );
                 emit("onClose");
@@ -46,7 +47,7 @@ const onSubmit = () => {
         });
     }
     else {
-        vendor.postCreate(form.value);
+        vendor.postCreate(form.value, props.projectUuid);
     }
 };
 
@@ -59,7 +60,7 @@ watch(
     () => {
         if (vendor.dataGroupCreate !== null) {
             vendor.resetPostCreate();
-            vendor.getIndex(
+            vendor.getIndex(props.projectUuid,
                 { page: 1, limit: 10 }
             );
             emit("onClose");

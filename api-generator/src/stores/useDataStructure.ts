@@ -14,6 +14,7 @@ export const useDataStructure = defineStore("dataStructure", () => {
   const dataStructuresError: Ref<null | AxiosError> = ref(null);
 
   async function getIndex(
+    projectUuid: string,
     dataGroupUuid: string,
     query: {
       page: number;
@@ -30,10 +31,10 @@ export const useDataStructure = defineStore("dataStructure", () => {
         .join("&");
 
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATAGROUP.STRUCTURE.INDEX.replace(
-          ":dataGroupUuid",
-          dataGroupUuid
-        )}?${queryString}`,
+        url: `${API.LOCAL.API.V1.DATASTRUCTURE_INDEX.replace(
+          ":projectUuid",
+          projectUuid
+        ).replace(":dataGroupUuid", dataGroupUuid)}?${queryString}`,
         method: "get",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,
@@ -52,6 +53,7 @@ export const useDataStructure = defineStore("dataStructure", () => {
 
   async function postData(
     form: { name: string },
+    projectUuid: string,
     dataGroupUuid: string,
     {
       beforeSend,
@@ -66,10 +68,10 @@ export const useDataStructure = defineStore("dataStructure", () => {
     try {
       beforeSend();
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATAGROUP.STRUCTURE.INDEX.replace(
-          ":dataGroupUuid",
-          dataGroupUuid
-        )}`,
+        url: `${API.LOCAL.API.V1.DATASTRUCTURE_INDEX.replace(
+          ":projectUuid",
+          projectUuid
+        ).replace(":dataGroupUuid", dataGroupUuid)}`,
         method: "post",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,
@@ -84,6 +86,7 @@ export const useDataStructure = defineStore("dataStructure", () => {
   }
 
   async function deleteData(
+    projectUuid: string,
     dataGroupUuid: string,
     uuid: string,
     {
@@ -99,10 +102,12 @@ export const useDataStructure = defineStore("dataStructure", () => {
     try {
       beforeSend();
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATAGROUP.STRUCTURE.SHOW.replace(
-          ":dataGroupUuid",
-          dataGroupUuid
-        ).replace(":dataStructureUuid", uuid)}`,
+        url: `${API.LOCAL.API.V1.DATASTRUCTURE_DETAIL.replace(
+          ":projectUuid",
+          projectUuid
+        )
+          .replace(":dataGroupUuid", dataGroupUuid)
+          .replace(":dataStructureUuid", uuid)}`,
         method: "delete",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,
@@ -116,6 +121,7 @@ export const useDataStructure = defineStore("dataStructure", () => {
 
   async function putEditData(
     form: { name: string },
+    projectUuid: string,
     dataGroupUuid: string,
     uuid: string,
     {
@@ -132,10 +138,12 @@ export const useDataStructure = defineStore("dataStructure", () => {
       beforeSend();
 
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATAGROUP.STRUCTURE.SHOW.replace(
-          ":dataGroupUuid",
-          dataGroupUuid
-        ).replace(":dataStructureUuid", uuid)}`,
+        url: `${API.LOCAL.API.V1.DATASTRUCTURE_DETAIL.replace(
+          ":projectUuid",
+          projectUuid
+        )
+          .replace(":dataGroupUuid", dataGroupUuid)
+          .replace(":dataStructureUuid", uuid)}`,
         method: "put",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,

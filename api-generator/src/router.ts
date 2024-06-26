@@ -2,10 +2,16 @@ import { createWebHistory, createRouter } from "vue-router";
 import HomeView from "src/pages/Home.vue";
 import Login from "src/pages/Login.vue";
 import About from "./pages/About.vue";
-import DataGroup from "./pages/DataGroup/DataGroup.vue";
+import DataGroup from "./pages/Project/DataGroup/DataGroup.vue";
+import DataGroupDetail from "./pages/Project/DataGroup/DataGroupDetail/DataGroupDetail.vue";
+import DataGroupDetailLayout from "./pages/Project/DataGroup/DataGroupDetail/DataGroupDetailLayout.vue";
 import LoggedInUser from "./components/templates/LoggedInUser.vue";
-import DataStructure from "./pages/DataGroup/DataStructure/DataStructure.vue";
-import DataList from "./pages/DataGroup/DataList/DataList.vue";
+import DataStructure from "./pages/Project/DataGroup/DataStructure/DataStructure.vue";
+import DataList from "./pages/Project/DataGroup/DataList/DataList.vue";
+import Project from "./pages/Project/Project.vue";
+import ProjectDetailLayout from "./pages/Project/ProjectDetail/ProjectDetailLayout.vue";
+import ProjectDetail from "./pages/Project/ProjectDetail/ProjectDetail.vue";
+import Error404 from "./pages/Error/Error404.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -17,27 +23,56 @@ const router = createRouter({
       children: [
         { name: "Home", path: "", component: HomeView },
         {
-          name: "Data Group",
-          path: "data-group",
+          name: "Project",
+          path: "project",
           children: [
             {
-              name: "Data Group Index",
+              name: "Project",
               path: "",
-              component: DataGroup,
+              component: Project,
             },
             {
-              name: "Data Group Detail",
-              path: ":uuid",
+              name: "Project Detail",
+              path: ":projectUuid",
+              component: ProjectDetailLayout,
               children: [
                 {
-                  name: "Data Group Structure",
-                  path: "structure",
-                  component: DataStructure,
+                  name: "Project Detail",
+                  path: "",
+                  component: ProjectDetail,
                 },
                 {
-                  name: "Data Group List",
-                  path: "list",
-                  component: DataList,
+                  name: "Model",
+                  path: "model",
+                  children: [
+                    {
+                      name: "Model Index",
+                      path: "",
+                      component: DataGroup,
+                    },
+                    {
+                      name: "Model Detail",
+                      path: ":dataGroupUuid",
+                      component: DataGroupDetailLayout,
+                      children: [
+                        {
+                          name: "Model Detail",
+                          path: "",
+                          component: DataGroupDetail,
+                        },
+                        {
+                          name: "Model Structure",
+                          path: "structure",
+                          component: DataStructure,
+                        },
+                        {
+                          name: "Data",
+                          path: "data",
+                          component: DataList,
+                        },
+                      ],
+                    },
+                  ],
                 },
               ],
             },
@@ -47,6 +82,7 @@ const router = createRouter({
       ],
     },
     { name: "Login", path: "/login", component: Login },
+    { name: "404", path: "/:pathMatch(.*)*", component: Error404 },
   ],
 });
 

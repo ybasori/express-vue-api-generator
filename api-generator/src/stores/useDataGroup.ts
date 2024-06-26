@@ -17,11 +17,14 @@ export const useDataGroup = defineStore("dataGroup", () => {
   const dataGroupCreateLoading = ref(false);
   const dataGroupCreateError: Ref<null | AxiosError> = ref(null);
 
-  async function getIndex(query: {
-    page: number;
-    limit: number;
-    sort?: { key: string; order: "asc" | "desc" };
-  }) {
+  async function getIndex(
+    projectUuid: string,
+    query: {
+      page: number;
+      limit: number;
+      sort?: { key: string; order: "asc" | "desc" };
+    }
+  ) {
     try {
       dataGroupsLoading.value = true;
 
@@ -31,7 +34,10 @@ export const useDataGroup = defineStore("dataGroup", () => {
         .join("&");
 
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATAGROUP.INDEX}?${queryString}`,
+        url: `${API.LOCAL.API.V1.DATAGROUP_INDEX.replace(
+          ":projectUuid",
+          projectUuid
+        )}?${queryString}`,
         method: "get",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,
@@ -48,12 +54,15 @@ export const useDataGroup = defineStore("dataGroup", () => {
     }
   }
 
-  async function postCreate(form: { name: string }) {
+  async function postCreate(form: { name: string }, projectUuid: string) {
     try {
       dataGroupCreateLoading.value = true;
 
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATAGROUP.INDEX}`,
+        url: `${API.LOCAL.API.V1.DATAGROUP_INDEX.replace(
+          ":projectUuid",
+          projectUuid
+        )}`,
         method: "post",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,
@@ -76,6 +85,7 @@ export const useDataGroup = defineStore("dataGroup", () => {
   }
 
   async function deleteDataGroup(
+    projectUuid: string,
     uuid: string,
     {
       beforeSend,
@@ -90,7 +100,10 @@ export const useDataGroup = defineStore("dataGroup", () => {
     try {
       beforeSend();
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATAGROUP.SHOW.replace(":uuid", uuid)}`,
+        url: `${API.LOCAL.API.V1.DATAGROUP_DETAIL.replace(
+          ":projectUuid",
+          projectUuid
+        ).replace(":dataGroupUuid", uuid)}`,
         method: "delete",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,
@@ -104,6 +117,7 @@ export const useDataGroup = defineStore("dataGroup", () => {
 
   async function putEditData(
     form: { name: string },
+    projectUuid: string,
     uuid: string,
     {
       beforeSend,
@@ -119,7 +133,10 @@ export const useDataGroup = defineStore("dataGroup", () => {
       beforeSend();
 
       const response = await axios({
-        url: `${API.LOCAL.API.V1.DATAGROUP.SHOW.replace(":uuid", uuid)}`,
+        url: `${API.LOCAL.API.V1.DATAGROUP_DETAIL.replace(
+          ":projectUuid",
+          projectUuid
+        ).replace(":dataGroupUuid", uuid)}`,
         method: "put",
         headers: {
           //   Authorization: `Bearer ${userStore.user?.token}`,

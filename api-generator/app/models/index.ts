@@ -3,6 +3,7 @@ import DataGroup from "./DataGroup";
 import DataStructure from "./DataStructure";
 import DataList from "./DataList";
 import DataRow from "./DataRow";
+import Project from "./Project";
 
 export interface IModel extends ModelCtor<Model<any, any>> {
   associate?: (model: typeof models) => IModel;
@@ -21,6 +22,7 @@ const models = {
   dataStructure: DataStructure(Db),
   dataRow: DataRow(Db),
   dataList: DataList(Db),
+  project: Project(Db),
 };
 
 Object.keys(models).forEach((modelName) => {

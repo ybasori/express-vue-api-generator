@@ -1,3 +1,10 @@
+export interface IProject {
+  name: string;
+  uuid: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface IDataGroup {
   name: string;
   uuid: string;

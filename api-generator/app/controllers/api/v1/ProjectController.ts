@@ -1,10 +1,9 @@
 import Validator, { IRules } from "app/helpers/Validator";
 import models from "app/models";
 import { RequestHandler } from "express";
-import { Op } from "sequelize";
 import { v4 as uuidv4 } from "uuid";
 
-interface IDataGroupController {
+interface IProjectController {
   index: RequestHandler;
   show: RequestHandler;
   create: RequestHandler;
@@ -14,17 +13,9 @@ interface IDataGroupController {
 
 //
 
-const DataGroupController: IDataGroupController = {
+const ProjectController: IProjectController = {
   index: async (req, res) => {
-    let project = await models.project.findOne({
-      where: {
-        uuid: req.params.projectUuid,
-      },
-    });
-    let unitData = await models.dataGroup.findAndCountAll({
-      where: {
-        projectId: project?.dataValues.id,
-      },
+    let unitData = await models.project.findAndCountAll({
       ...(req.query.sort
         ? {
             order: (
@@ -44,9 +35,9 @@ const DataGroupController: IDataGroupController = {
     });
   },
   show: async (req, res) => {
-    let unitData = await models.dataGroup.findOne({
+    let unitData = await models.project.findOne({
       where: {
-        uuid: req.params.dataGroupUuid,
+        uuid: req.params.projectUuid,
       },
     });
     return res.status(200).json({
@@ -57,30 +48,12 @@ const DataGroupController: IDataGroupController = {
   },
   create: async (req, res) => {
     try {
-      let unitData = await models.project.findOne({
-        where: {
-          uuid: req.params.projectUuid,
-        },
-      });
       const rules: IRules = {
         name: {
           label: "Name",
           rule: {
             required: true,
-            custom: async ({ setMessage, value, label }) => {
-              const dt = await models.dataGroup.findOne({
-                where: {
-                  name: value,
-                  projectId: unitData?.dataValues.id,
-                },
-              });
-
-              if (dt?.dataValues) {
-                return setMessage(`${label} is already taken.`);
-              } else {
-                return true;
-              }
-            },
+            unique: "project,name",
           },
         },
       };
@@ -94,9 +67,8 @@ const DataGroupController: IDataGroupController = {
         });
       }
 
-      let result = await models.dataGroup.create({
+      let result = await models.project.create({
         ...req.body,
-        projectId: unitData?.dataValues.id,
         uuid: uuidv4(),
       });
       return res.status(200).json({
@@ -115,33 +87,12 @@ const DataGroupController: IDataGroupController = {
   },
   update: async (req, res) => {
     try {
-      let unitData = await models.project.findOne({
-        where: {
-          uuid: req.params.projectUuid,
-        },
-      });
       const rules: IRules = {
         name: {
           label: "Name",
           rule: {
             required: true,
-            custom: async ({ setMessage, value, label }) => {
-              const dt = await models.dataGroup.findOne({
-                where: {
-                  name: value,
-                  projectId: unitData?.dataValues.id,
-                  uuid: {
-                    [Op.ne]: req.params.dataGroupUuid,
-                  },
-                },
-              });
-
-              if (dt?.dataValues) {
-                return setMessage(`${label} is already taken.`);
-              } else {
-                return true;
-              }
-            },
+            unique: `project,name,${req.params.projectUuid},uuid`,
           },
         },
       };
@@ -155,13 +106,13 @@ const DataGroupController: IDataGroupController = {
         });
       }
 
-      let result = await models.dataGroup.update(
+      let result = await models.project.update(
         {
           ...req.body,
         },
         {
           where: {
-            uuid: req.params.dataGroupUuid,
+            uuid: req.params.projectUuid,
           },
         }
       );
@@ -181,9 +132,9 @@ const DataGroupController: IDataGroupController = {
   },
   delete: async (req, res) => {
     try {
-      let result = await models.dataGroup.destroy({
+      let result = await models.project.destroy({
         where: {
-          uuid: req.params.dataGroupUuid,
+          uuid: req.params.projectUuid,
         },
       });
       return res.status(200).json({
@@ -202,4 +153,4 @@ const DataGroupController: IDataGroupController = {
   },
 };
 
-export default DataGroupController;
+export default ProjectController;
