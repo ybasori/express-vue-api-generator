@@ -5,6 +5,12 @@ export interface IProject {
   updatedAt: string;
 }
 
+export interface ILogic {
+  name: string;
+  uuid: string;
+  createdAt: string;
+  updatedAt: string;
+}
 export interface IDataGroup {
   name: string;
   uuid: string;

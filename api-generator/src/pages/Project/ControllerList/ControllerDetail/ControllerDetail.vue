@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import DataGroupAddEdit from "src/components/organisms/DataGroupAddEdit.vue";
-import DataGroupDelete from "src/components/organisms/DataGroupDelete.vue";
-import { IDataGroup } from "src/config/types";
-import { useDataGroup } from "src/stores/useDataGroup";
+import LogicDetailAddEdit from "src/components/organisms/LogicDetailAddEdit.vue";
+import { ILogic } from "src/config/types";
+import { useLogicDetail } from "src/stores/useLogicDetail";
 import { Ref, ref } from "vue";
 import { useRoute } from "vue-router";
 import type { VDataTable } from "vuetify/components";
@@ -34,13 +33,13 @@ const sortPage: Ref<{
     key: "createdAt",
     order: "asc"
 });
-const vendorStore = useDataGroup();
+const vendorStore = useLogicDetail();
 
 const dialog = ref(false);
 const dialogEdit = ref(false);
-const itemEdit: Ref<undefined | IDataGroup> = ref(undefined);
+const itemEdit: Ref<undefined | ILogic> = ref(undefined);
 const dialogDelete = ref(false);
-const itemDelete: Ref<null | IDataGroup> = ref(null);
+const itemDelete: Ref<null | ILogic> = ref(null);
 const isSubmittingDelete = ref(false);
 const route = useRoute()
 
@@ -48,11 +47,11 @@ const route = useRoute()
 const openDialog = () => {
     dialog.value = true;
 };
-const openDialogEdit = (item: IDataGroup) => {
+const openDialogEdit = (item: ILogic) => {
     dialogEdit.value = true;
     itemEdit.value = item;
 };
-const openDialogDelete = (item: IDataGroup) => {
+const openDialogDelete = (item: ILogic) => {
     dialogDelete.value = true;
     itemDelete.value = item;
 };
@@ -66,7 +65,7 @@ const closeDialogDelete = () => {
 };
 
 const onDelete = () => {
-    vendorStore.deleteDataGroup(`${route.params.projectUuid}`, itemDelete.value?.uuid ?? "", {
+    vendorStore.deleteDataGroup(`${route.params.projectUuid}`, `${route.params.controllerUuid}`, itemDelete.value?.uuid ?? "", {
         beforeSend: () => {
             isSubmittingDelete.value = true;
         },
@@ -98,27 +97,29 @@ const loadItems = ({
     currentPage.value = page;
     sortPage.value = sortBy;
     itemsPerPage.value = limit;
-    vendorStore.getIndex(`${route.params.projectUuid}`,
+    vendorStore.getIndex(`${route.params.projectUuid}`, `${route.params.controllerUuid}`,
         { page, limit, sort: sortBy }
     );
 };
 </script>
 <template>
 
+    <v-btn size="small" :to="`/project/${route.params.projectUuid}/controller`">Back</v-btn>
     <v-card flat color="#dddddd">
         <template v-slot:title>
-            <span>List Model</span>
+            <span>List Controller</span>
         </template>
         <template v-slot:append>
-            <v-btn class="text-none" color="primary" text="NEW MODEL" variant="text" slim @click="openDialog()"></v-btn>
+            <v-btn class="text-none" color="primary" text="NEW CONTROLLER" variant="text" slim
+                @click="openDialog()"></v-btn>
         </template>
-        <v-data-table-server :headers="headers" :items="vendorStore.dataGroups?.rows ?? []" @update:options="loadItems"
-            v-model:items-per-page="itemsPerPage" :items-length="vendorStore.dataGroups?.count ?? 0"
-            :loading="vendorStore.dataGroupsLoading">
+        <v-data-table-server :headers="headers" :items="vendorStore.logicDetails?.rows ?? []"
+            @update:options="loadItems" v-model:items-per-page="itemsPerPage"
+            :items-length="vendorStore.logicDetails?.count ?? 0" :loading="vendorStore.logicDetailsLoading">
 
-            <template v-slot:item.action="{ item }: { item: IDataGroup }">
-                <v-btn size="small" text="Detail" slim
-                    :to="`/project/${route.params.projectUuid}/model/${item.uuid}`"></v-btn>
+            <template v-slot:item.action="{ item }: { item: ILogic }">
+                <v-btn size="small" text="Visual script" slim
+                    :to="`/project/${route.params.projectUuid}/controller/${route.params.controllerUuid}/visual/${item.uuid}`"></v-btn>
                 <v-btn size="small" color="primary" text="Edit" slim @click="openDialogEdit(item)"></v-btn>
                 <v-btn size="small" color="red" text="Delete" slim @click="openDialogDelete(item)"></v-btn>
             </template>
@@ -134,15 +135,16 @@ const loadItems = ({
     <v-dialog v-model="dialog" max-width="800">
         <v-card>
             <v-card-title class="d-flex justify-space-between align-center">
-                <div class="text-h5 text-medium-emphasis ps-2">New Data Group</div>
+                <div class="text-h5 text-medium-emphasis ps-2">New Controller</div>
 
                 <v-btn icon="mdi-close" variant="text" @click="dialog = false"></v-btn>
             </v-card-title>
             <v-divider class="mb-4"></v-divider>
 
             <v-card-text>
-                <DataGroupAddEdit :projectUuid="`${route.params.projectUuid}`" @onClose="dialog = false">
-                </DataGroupAddEdit>
+                <LogicDetailAddEdit :projectUuid="`${route.params.projectUuid}`"
+                    :logicUuid="`${route.params.controllerUuid}`" @onClose="dialog = false">
+                </LogicDetailAddEdit>
             </v-card-text>
         </v-card>
     </v-dialog>
@@ -156,8 +158,10 @@ const loadItems = ({
             <v-divider class="mb-4"></v-divider>
 
             <v-card-text>
-                <DataGroupAddEdit :projectUuid="`${route.params.projectUuid}`" :initialValues="itemEdit"
-                    @onClose="closeDialogEdit()"></DataGroupAddEdit>
+                <LogicDetailAddEdit :projectUuid="`${route.params.projectUuid}`"
+                    :logicUuid="`${route.params.controllerUuid}`" :initialValues="itemEdit"
+                    @onClose="closeDialogEdit()">
+                </LogicDetailAddEdit>
             </v-card-text>
         </v-card>
     </v-dialog>
@@ -170,7 +174,6 @@ const loadItems = ({
                     :disabled="isSubmittingDelete"></v-btn>
             </v-card-title>
             <v-divider class="mb-4"></v-divider>
-            <DataGroupDelete></DataGroupDelete>
             <template v-slot:actions>
                 <v-spacer></v-spacer>
 

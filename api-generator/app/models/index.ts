@@ -1,9 +1,11 @@
-import { Model, ModelCtor, QueryTypes, Sequelize } from "sequelize";
+import { Model, ModelCtor, Sequelize } from "sequelize";
 import DataGroup from "./DataGroup";
 import DataStructure from "./DataStructure";
 import DataList from "./DataList";
 import DataRow from "./DataRow";
 import Project from "./Project";
+import Logic from "./Logic";
+import LogicDetail from "./LogicDetail";
 
 export interface IModel extends ModelCtor<Model<any, any>> {
   associate?: (model: typeof models) => IModel;
@@ -23,6 +25,8 @@ const models = {
   dataRow: DataRow(Db),
   dataList: DataList(Db),
   project: Project(Db),
+  logic: Logic(Db),
+  logicDetail: LogicDetail(Db),
 };
 
 Object.keys(models).forEach((modelName) => {

@@ -86,8 +86,10 @@ const required = (v: string) => {
     <v-form v-model="validForm" @submit.prevent="onSubmit">
         <template v-for="(item, i) in props.dataStructure" :key="i">
 
-            <v-text-field v-model="form[item.name]" :readonly="false" class="mb-2" :label="item.name" clearable
-                :rules="[required]"></v-text-field>
+            <v-text-field v-if="item.type === 'text'" v-model="form[item.name]" :readonly="false" class="mb-2"
+                :label="item.name" clearable :rules="[required]"></v-text-field>
+            <v-number-input v-if="item.type === 'number'" control-variant="default" :label="item.name" clearable
+                :rules="[required]" :readonly="false" v-model="form[item.name]"></v-number-input>
         </template>
 
         <v-btn :disabled="!validForm" :loading="isSubmitting" color="success" size="large" type="submit"

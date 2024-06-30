@@ -6,6 +6,7 @@ import "vuetify/styles";
 import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
+import { VNumberInput } from "vuetify/labs/VNumberInput";
 
 import { createPinia } from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
@@ -14,7 +15,10 @@ import router from "src/router";
 const app = createApp(App);
 
 const vuetify = createVuetify({
-  components,
+  components: {
+    ...components,
+    VNumberInput,
+  },
   directives,
 });
 

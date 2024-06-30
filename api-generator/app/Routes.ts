@@ -5,6 +5,8 @@ import bodyParser from "body-parser";
 import StructureController from "./controllers/api/v1/StructureController";
 import DataListController from "./controllers/api/v1/DataListController";
 import ProjectController from "./controllers/api/v1/ProjectController";
+import LogicController from "./controllers/api/v1/LogicController";
+import LogicDetailController from "./controllers/api/v1/LogicDetailController";
 
 const Routes: () => IRoute[] = () => {
   return [
@@ -49,6 +51,83 @@ const Routes: () => IRoute[] = () => {
                           path: "/",
                           method: "delete",
                           controller: ProjectController.delete,
+                        },
+                        {
+                          path: "/logic",
+                          children: [
+                            {
+                              path: "/",
+                              method: "get",
+                              controller: LogicController.index,
+                            },
+                            {
+                              path: "/",
+                              method: "post",
+                              middleware: [bodyParser.json()],
+                              controller: LogicController.create,
+                            },
+                            {
+                              path: "/:logicUuid",
+                              children: [
+                                {
+                                  path: "/",
+                                  method: "get",
+                                  controller: LogicController.show,
+                                },
+                                {
+                                  path: "/",
+                                  method: "put",
+                                  middleware: [bodyParser.json()],
+                                  controller: LogicController.update,
+                                },
+                                {
+                                  path: "/",
+                                  method: "delete",
+                                  controller: LogicController.delete,
+                                },
+                                {
+                                  path: "/detail",
+                                  children: [
+                                    {
+                                      path: "/",
+                                      method: "get",
+                                      controller: LogicDetailController.index,
+                                    },
+                                    {
+                                      path: "/",
+                                      method: "post",
+                                      middleware: [bodyParser.json()],
+                                      controller: LogicDetailController.create,
+                                    },
+                                    {
+                                      path: "/:logicDetailUuid",
+                                      children: [
+                                        {
+                                          path: "/",
+                                          method: "get",
+                                          controller:
+                                            LogicDetailController.show,
+                                        },
+                                        {
+                                          path: "/",
+                                          method: "put",
+                                          middleware: [bodyParser.json()],
+                                          controller:
+                                            LogicDetailController.update,
+                                        },
+                                        {
+                                          path: "/",
+                                          method: "delete",
+                                          controller:
+                                            LogicDetailController.delete,
+                                        },
+                                      ],
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                          ],
                         },
                         {
                           path: "/data-group",

@@ -12,6 +12,9 @@ import Project from "./pages/Project/Project.vue";
 import ProjectDetailLayout from "./pages/Project/ProjectDetail/ProjectDetailLayout.vue";
 import ProjectDetail from "./pages/Project/ProjectDetail/ProjectDetail.vue";
 import Error404 from "./pages/Error/Error404.vue";
+import ControllerList from "./pages/Project/ControllerList/ControllerList.vue";
+import ControllerDetail from "./pages/Project/ControllerList/ControllerDetail/ControllerDetail.vue";
+import ControllerDetailVisual from "./pages/Project/ControllerList/ControllerDetail/ControllerDetailVisual/ControllerDetailVisual.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -69,6 +72,39 @@ const router = createRouter({
                           name: "Data",
                           path: "data",
                           component: DataList,
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  name: "Controller",
+                  path: "controller",
+                  children: [
+                    {
+                      name: "Controller Index",
+                      path: "",
+                      component: ControllerList,
+                    },
+                    {
+                      name: "Controller Detail",
+                      path: ":controllerUuid",
+                      children: [
+                        {
+                          name: "Controller Detail Index",
+                          path: "",
+                          component: ControllerDetail,
+                        },
+                        {
+                          name: "Controller Detail Visual",
+                          path: "visual",
+                          children: [
+                            {
+                              name: "Controller Detail",
+                              path: ":controllerDetailUuid",
+                              component: ControllerDetailVisual,
+                            },
+                          ],
                         },
                       ],
                     },

@@ -7,7 +7,7 @@ const route = useRoute();
 
 </script>
 <template>
-    <template v-if="!!!route.params.dataGroupUuid">
+    <template v-if="!!!route.params.dataGroupUuid && !!!route.params.controllerUuid">
         <v-btn size="small" :to="`/project`">Back</v-btn>
         <v-tabs color="deep-purple-accent-4">
             <v-tab :to="`/project/${route.params.projectUuid}/route`">Route</v-tab>
