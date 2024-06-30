@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 26, 2024 at 05:15 PM
+-- Generation Time: Jun 30, 2024 at 05:12 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -33,7 +33,7 @@ CREATE TABLE `data_groups` (
   `uuid` varchar(225) NOT NULL,
   `project_id` int(11) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -50,7 +50,7 @@ CREATE TABLE `data_lists` (
   `data_structure_id` int(11) NOT NULL,
   `data_value` text NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -64,7 +64,7 @@ CREATE TABLE `data_rows` (
   `uuid` varchar(225) NOT NULL,
   `data_group_id` int(11) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -80,7 +80,37 @@ CREATE TABLE `data_structures` (
   `data_type` varchar(225) NOT NULL,
   `data_group_id` int(11) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `logics`
+--
+
+CREATE TABLE `logics` (
+  `id` int(11) NOT NULL,
+  `name` varchar(225) NOT NULL,
+  `uuid` varchar(225) NOT NULL,
+  `project_id` int(11) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `logic_details`
+--
+
+CREATE TABLE `logic_details` (
+  `id` int(11) NOT NULL,
+  `name` varchar(225) NOT NULL,
+  `logic_id` int(11) NOT NULL,
+  `uuid` varchar(225) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -132,6 +162,20 @@ ALTER TABLE `data_structures`
   ADD KEY `data_group_id` (`data_group_id`);
 
 --
+-- Indexes for table `logics`
+--
+ALTER TABLE `logics`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `logics_ibfk_1` (`project_id`);
+
+--
+-- Indexes for table `logic_details`
+--
+ALTER TABLE `logic_details`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `logic_id` (`logic_id`);
+
+--
 -- Indexes for table `projects`
 --
 ALTER TABLE `projects`
@@ -163,6 +207,18 @@ ALTER TABLE `data_rows`
 -- AUTO_INCREMENT for table `data_structures`
 --
 ALTER TABLE `data_structures`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `logics`
+--
+ALTER TABLE `logics`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `logic_details`
+--
+ALTER TABLE `logic_details`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -200,6 +256,18 @@ ALTER TABLE `data_rows`
 --
 ALTER TABLE `data_structures`
   ADD CONSTRAINT `data_structures_ibfk_1` FOREIGN KEY (`data_group_id`) REFERENCES `data_groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `logics`
+--
+ALTER TABLE `logics`
+  ADD CONSTRAINT `logics_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `logic_details`
+--
+ALTER TABLE `logic_details`
+  ADD CONSTRAINT `logic_details_ibfk_1` FOREIGN KEY (`logic_id`) REFERENCES `logics` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
